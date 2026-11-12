@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Dashboard | SPK Football</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;box-sizing:border-box}
+    body{background:#0a0f1e;color:#f9fafb;margin:0}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+
+    /* Sidebar */
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:256px;background:#0d1424;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;z-index:100}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6b7280;text-decoration:none;transition:all .2s}
+    .nav-link:hover{background:rgba(255,255,255,.05);color:#d1d5db}
+    .nav-link.nav-active{background:rgba(16,185,129,.12);color:#34d399!important}
+
+    /* Cards & Inputs */
+    .glass-card{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.08);border-radius:12px;backdrop-filter:blur(12px)}
+    .input-field{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#f9fafb;font-size:13.5px;outline:none;transition:all .2s}
+    .input-field:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+    .input-field::placeholder{color:#4b5563}
+    select.input-field option{background:#111827;color:#f9fafb}
+    .btn-primary{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;cursor:pointer;transition:all .2s}
+    .btn-primary:hover:not(:disabled){box-shadow:0 4px 16px rgba(16,185,129,.35);transform:translateY(-1px)}
+    .btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;background:transparent;color:#9ca3af;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .2s}
+    .btn-ghost:hover{background:rgba(255,255,255,.05);color:#f9fafb}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner-sm{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+
+    /* Stat cards */
+    .stat-card{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;transition:border-color .2s}
+    .stat-card:hover{border-color:rgba(16,185,129,.3)}
+    .stat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(16,185,129,.04),transparent);pointer-events:none}
+    .stat-label{font-size:12px;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:.6px}
+    .stat-value{font-size:28px;font-weight:800;color:#f9fafb;line-height:1}
+    .stat-sub{font-size:11px;color:#4b5563;margin-top:2px}
+
+    /* Table */
+    .spk-table{width:100%;border-collapse:collapse;font-size:13px}
+    .spk-table th{padding:11px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid rgba(255,255,255,.06)}
+
+    /* Logout btn */
+    #btn-logout{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:9px;border-radius:8px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+    #btn-logout:hover{background:rgba(239,68,68,.15)}
+
+    /* Toast */
+    #toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+    .toast{padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;min-width:260px;max-width:380px;animation:slideIn .3s ease;border:1px solid;display:flex;align-items:center;gap:10px}
+    .toast-success{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.3);color:#34d399}
+    .toast-error{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#f87171}
+    .toast-warning{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);color:#fbbf24}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5"/>
+        <path d="M12 2C12 2 9 7 9 12C9 17 12 22 12 22" stroke="white" stroke-width="1.5"/>
+        <path d="M2 12H22" stroke="white" stroke-width="1.5"/>
+        <path d="M4 7C4 7 8 9 12 9C16 9 20 7 20 7" stroke="white" stroke-width="1.2"/>
+        <path d="M4 17C4 17 8 15 12 15C16 15 20 17 20 17" stroke="white" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#f9fafb">SPK Football</div>
+      <div style="font-size:10px;color:#4b5563;margin-top:1px">Pemilihan Pemain Utama</div>
+    </div>
+  </div>
+
+  <nav style="flex:1;padding:16px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+    <a href="dashboard.html" class="nav-link" data-nav-page="dashboard.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="players.html" class="nav-link" data-nav-page="players.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Data Pemain
+    </a>
+    <a href="evaluations.html" class="nav-link" data-nav-page="evaluations.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Input Evaluasi
+    </a>
+    <a href="results.html" class="nav-link" data-nav-page="results.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Hasil SPK
+    </a>
+  </nav>
+
+  <div style="padding:12px;border-top:1px solid rgba(255,255,255,.06)">
+    <div id="user-info" style="padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.03);margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:#d1d5db" id="user-name">-</div>
+      <div style="font-size:11px;color:#4b5563;margin-top:2px" id="user-role">-</div>
+    </div>
+    <div style="padding:0 0 4px">
+      <button id="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div style="margin-left:256px;min-height:100vh;padding:28px 32px">
+  <!-- Header -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#f9fafb;margin:0 0 4px">Dashboard</h1>
+      <p style="font-size:13px;color:#6b7280;margin:0">Ringkasan data pemain dan sistem pendukung keputusan</p>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:11px;color:#4b5563" id="last-updated"></div>
+      <div style="font-size:12px;color:#6b7280;margin-top:3px">Musim: <span style="color:#34d399;font-weight:600" id="stat-musim">2024/2025</span></div>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px">
+    <div class="stat-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="stat-label">Total Pemain</div>
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(59,130,246,.12);display:flex;align-items:center;justify-content:center">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+      </div>
+      <div class="stat-value" id="stat-total">-</div>
+      <div class="stat-sub">Pemain terdaftar</div>
+    </div>
+    <div class="stat-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="stat-label">Pemain Aktif</div>
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+      </div>
+      <div class="stat-value" id="stat-aktif">-</div>
+      <div class="stat-sub">Layak dievaluasi</div>
+    </div>
+    <div class="stat-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="stat-label">Total Kriteria</div>
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(139,92,246,.12);display:flex;align-items:center;justify-content:center">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+      </div>
+      <div class="stat-value" id="stat-kriteria">-</div>
+      <div class="stat-sub">Aspek penilaian</div>
+    </div>
+    <div class="stat-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="stat-label">Musim Aktif</div>
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+      </div>
+      <div class="stat-value" style="font-size:18px" id="stat-musim-card">2024/2025</div>
+      <div class="stat-sub">Tahun berjalan</div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="glass-card" style="padding:16px 20px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:200px">
+        <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search-player" class="input-field" placeholder="Cari nama pemain..." style="padding-left:34px"/>
+      </div>
+      <select id="filter-position" class="input-field" style="width:160px">
+        <option value="all">Semua Posisi</option>
+        <option value="GK">GK</option><option value="CB">CB</option>
+        <option value="LB">LB</option><option value="RB">RB</option>
+        <option value="CDM">CDM</option><option value="CM">CM</option>
+        <option value="CAM">CAM</option><option value="LM">LM</option>
+        <option value="RM">RM</option><option value="LW">LW</option>
+        <option value="RW">RW</option><option value="ST">ST</option>
+        <option value="CF">CF</option>
+      </select>
+      <select id="filter-status" class="input-field" style="width:150px">
+        <option value="all">Semua Status</option>
+        <option value="Aktif">Aktif</option>
+        <option value="Cedera">Cedera</option>
+        <option value="Akumulasi">Akumulasi</option>
+        <option value="Skors">Skors</option>
+      </select>
+      <span style="font-size:12px;color:#6b7280;white-space:nowrap"><span id="player-count">0 pemain</span></span>
+    </div>
+  </div>
+
+  <!-- Players Table -->
+  <div class="glass-card">
+    <div style="padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between">
+      <h2 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0">Daftar Pemain</h2>
+      <a href="players.html" style="font-size:12px;color:#34d399;text-decoration:none;font-weight:500">Kelola Pemain →</a>
+    </div>
+    <div style="overflow-x:auto;margin-top:12px">
+      <table class="spk-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Pemain</th>
+            <th>Posisi</th>
+            <th>Usia</th>
+            <th>No. Punggung</th>
+            <th>Status</th>
+            <th>Kelayakan</th>
+          </tr>
+        </thead>
+        <tbody id="player-table-body">
+          <tr><td colspan="7" style="padding:40px;text-align:center;color:#4b5563">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script>
+  // Populate user info in sidebar
+  document.addEventListener('DOMContentLoaded', () => {
+    const u = getUser();
+    if (u) {
+      const nameEl = document.getElementById('user-name');
+      const roleEl = document.getElementById('user-role');
+      if (nameEl) nameEl.textContent = u.nama_lengkap || u.email || '-';
+      const roleMap = { admin: '🛡️ Administrator', pelatih: '⚽ Pelatih', asisten: '📋 Asisten Pelatih' };
+      if (roleEl) roleEl.textContent = roleMap[u.role] || u.role || '-';
+    }
+    // Also set musim card
+    const mc = document.getElementById('stat-musim-card');
+    if (mc) mc.textContent = '2024/2025';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Hasil SPK | SPK Football</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;box-sizing:border-box}
+    body{background:#0a0f1e;color:#f9fafb;margin:0}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:256px;background:#0d1424;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;z-index:100}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6b7280;text-decoration:none;transition:all .2s}
+    .nav-link:hover{background:rgba(255,255,255,.05);color:#d1d5db}
+    .nav-link.nav-active{background:rgba(16,185,129,.12);color:#34d399!important}
+    .glass-card{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.08);border-radius:12px;backdrop-filter:blur(12px)}
+    .input-field{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#f9fafb;font-size:13.5px;outline:none;transition:all .2s}
+    .input-field:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+    .input-field::placeholder{color:#4b5563}
+    select.input-field option{background:#111827;color:#f9fafb}
+    .btn-primary{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;cursor:pointer;transition:all .2s}
+    .btn-primary:hover:not(:disabled){box-shadow:0 4px 16px rgba(16,185,129,.35);transform:translateY(-1px)}
+    .btn-primary:disabled{opacity:.6;cursor:not-allowed}
+    .btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;background:transparent;color:#9ca3af;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .2s}
+    .btn-ghost:hover{background:rgba(255,255,255,.05);color:#f9fafb}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner-sm{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+    #btn-logout{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:9px;border-radius:8px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+    #btn-logout:hover{background:rgba(239,68,68,.15)}
+
+    /* Tabs */
+    .tab-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7280;background:transparent;border:1px solid transparent;cursor:pointer;transition:all .2s}
+    .tab-btn:hover{background:rgba(255,255,255,.05);color:#d1d5db}
+    .tab-btn.active{background:rgba(16,185,129,.12);color:#34d399;border-color:rgba(16,185,129,.25)}
+
+    /* SPK Table */
+    .spk-table{width:100%;border-collapse:collapse;font-size:12.5px}
+    .spk-table th{padding:10px 14px;text-align:left;font-size:10.5px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap}
+    .spk-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);color:#d1d5db;vertical-align:middle}
+    .spk-table tr:hover td{background:rgba(255,255,255,.025)}
+    .spk-table tr:last-child td{border-bottom:none}
+
+    /* Summary cards */
+    .sum-card{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;text-align:center}
+
+    /* Toast */
+    #toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+    .toast{padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;min-width:260px;max-width:380px;animation:slideIn .3s ease;border:1px solid;display:flex;align-items:center;gap:10px}
+    .toast-success{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.3);color:#34d399}
+    .toast-error{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#f87171}
+    .toast-warning{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);color:#fbbf24}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+    /* Print */
+    @media print{
+      .sidebar,#toast-container,.no-print{display:none!important}
+      body{background:#fff;color:#000}
+      .glass-card{border:1px solid #ccc;background:#fff}
+      div[style*="margin-left:256px"]{margin-left:0!important}
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5"/>
+        <path d="M12 2C12 2 9 7 9 12C9 17 12 22 12 22" stroke="white" stroke-width="1.5"/>
+        <path d="M2 12H22" stroke="white" stroke-width="1.5"/>
+        <path d="M4 7C4 7 8 9 12 9C16 9 20 7 20 7" stroke="white" stroke-width="1.2"/>
+        <path d="M4 17C4 17 8 15 12 15C16 15 20 17 20 17" stroke="white" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#f9fafb">SPK Football</div>
+      <div style="font-size:10px;color:#4b5563;margin-top:1px">Pemilihan Pemain Utama</div>
+    </div>
+  </div>
+  <nav style="flex:1;padding:16px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+    <a href="dashboard.html" class="nav-link" data-nav-page="dashboard.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="players.html" class="nav-link" data-nav-page="players.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Data Pemain
+    </a>
+    <a href="evaluations.html" class="nav-link" data-nav-page="evaluations.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Input Evaluasi
+    </a>
+    <a href="results.html" class="nav-link" data-nav-page="results.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Hasil SPK
+    </a>
+  </nav>
+  <div style="padding:12px;border-top:1px solid rgba(255,255,255,.06)">
+    <div id="user-info" style="padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.03);margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:#d1d5db" id="user-name">-</div>
+      <div style="font-size:11px;color:#4b5563;margin-top:2px" id="user-role">-</div>
+    </div>
+    <button id="btn-logout">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div style="margin-left:256px;min-height:100vh;padding:28px 32px">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px" class="no-print">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#f9fafb;margin:0 0 4px">Hasil Perhitungan SPK</h1>
+      <p style="font-size:13px;color:#6b7280;margin:0">Metode Simple Additive Weighting (SAW) + Rank Order Centroid (ROC)</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn-ghost" onclick="window.print()" title="Cetak Laporan">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Cetak
+      </button>
+    </div>
+  </div>
+
+  <!-- Controls Bar -->
+  <div class="glass-card no-print" style="padding:16px 20px;margin-bottom:24px">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div>
+        <label style="display:block;font-size:10.5px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Musim</label>
+        <select id="season-select" class="input-field" style="width:160px">
+          <option value="2024/2025">2024/2025</option>
+          <option value="2023/2024">2023/2024</option>
+          <option value="2025/2026">2025/2026</option>
+        </select>
+      </div>
+      <div style="padding-top:18px">
+        <button id="btn-calculate" class="btn-primary" onclick="triggerCalculate()">
+          <div id="btn-calc-spinner" class="spinner-sm"></div>
+          <svg id="calc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span id="btn-calc-text">Hitung SPK</span>
+        </button>
+      </div>
+      <div id="result-meta" style="display:none;padding-top:18px">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span style="font-size:12px;color:#34d399;font-weight:500">Hasil tersedia · Musim <span id="result-season-label">-</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="empty-state" class="glass-card" style="padding:60px 40px;text-align:center">
+    <div style="width:72px;height:72px;border-radius:16px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <h3 style="font-size:16px;font-weight:700;color:#f9fafb;margin:0 0 8px">Belum Ada Hasil Perhitungan</h3>
+    <p style="font-size:13px;color:#6b7280;margin:0 0 24px;max-width:420px;margin-left:auto;margin-right:auto">Pilih musim evaluasi dan klik tombol <strong style="color:#34d399">Hitung SPK</strong> untuk menjalankan algoritma ROC + SAW dan melihat rekomendasi pemain utama.</p>
+    <button class="btn-primary" onclick="triggerCalculate()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Mulai Hitung Sekarang
+    </button>
+  </div>
+
+  <!-- Results Container -->
+  <div id="results-container" style="display:none">
+    <!-- Summary Cards -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+      <div class="sum-card">
+        <div style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Pemain Dievaluasi</div>
+        <div style="font-size:32px;font-weight:800;color:#f9fafb" id="sum-total">-</div>
+        <div style="font-size:11px;color:#4b5563;margin-top:4px">dengan data evaluasi lengkap</div>
+      </div>
+      <div class="sum-card">
+        <div style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Pemain Terpilih</div>
+        <div style="font-size:32px;font-weight:800;color:#34d399">11</div>
+        <div style="font-size:11px;color:#4b5563;margin-top:4px">Starting XI rekomendasi</div>
+      </div>
+      <div class="sum-card">
+        <div style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Kriteria Aktif</div>
+        <div style="font-size:32px;font-weight:800;color:#a78bfa" id="sum-criteria">-</div>
+        <div style="font-size:11px;color:#4b5563;margin-top:4px">aspek penilaian ROC+SAW</div>
+      </div>
+    </div>
+
+    <!-- Main card with tabs -->
+    <div class="glass-card">
+      <!-- Tabs -->
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px" class="no-print">
+        <button class="tab-btn active" id="tab-btn-1" onclick="switchTab(1)">📊 Bobot ROC & Matriks Keputusan</button>
+        <button class="tab-btn" id="tab-btn-2" onclick="switchTab(2)">🔢 Matriks Ternormalisasi</button>
+        <button class="tab-btn" id="tab-btn-3" onclick="switchTab(3)">🏆 Peringkat & Rekomendasi</button>
+      </div>
+
+      <!-- Tab Panel 1: ROC + Decision Matrix -->
+      <div id="tab-panel-1" style="padding:20px">
+        <!-- ROC Weights Table -->
+        <h3 style="font-size:13px;font-weight:700;color:#f9fafb;margin:0 0 12px;display:flex;align-items:center;gap:8px">
+          <span style="width:3px;height:16px;background:#10b981;border-radius:2px;display:inline-block"></span>
+          Bobot Kriteria (ROC)
+        </h3>
+        <div style="overflow-x:auto;margin-bottom:28px">
+          <table class="spk-table">
+            <thead>
+              <tr>
+                <th>Rank</th><th>Kode</th><th>Nama Kriteria</th><th>Dimensi</th><th>Atribut</th><th>Satuan</th><th style="text-align:right">Bobot ROC</th><th style="text-align:right">Persen</th>
+              </tr>
+            </thead>
+            <tbody id="roc-table-body">
+              <tr><td colspan="8" style="padding:30px;text-align:center;color:#4b5563">Belum ada data</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Decision Matrix -->
+        <h3 style="font-size:13px;font-weight:700;color:#f9fafb;margin:0 0 12px;display:flex;align-items:center;gap:8px">
+          <span style="width:3px;height:16px;background:#8b5cf6;border-radius:2px;display:inline-block"></span>
+          Matriks Keputusan (Nilai Asli)
+        </h3>
+        <div style="overflow-x:auto">
+          <table class="spk-table">
+            <thead>
+              <tr id="decision-matrix-header">
+                <th>No</th><th>Pemain</th>
+              </tr>
+            </thead>
+            <tbody id="decision-matrix-body">
+              <tr><td colspan="2" style="padding:30px;text-align:center;color:#4b5563">Belum ada data</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab Panel 2: Normalized Matrix -->
+      <div id="tab-panel-2" style="display:none;padding:20px">
+        <h3 style="font-size:13px;font-weight:700;color:#f9fafb;margin:0 0 12px;display:flex;align-items:center;gap:8px">
+          <span style="width:3px;height:16px;background:#3b82f6;border-radius:2px;display:inline-block"></span>
+          Matriks Ternormalisasi (r<sub>ij</sub>)
+        </h3>
+        <div style="padding:10px 14px;border-radius:8px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);margin-bottom:16px">
+          <p style="font-size:12px;color:#93c5fd;margin:0">
+            <strong>Benefit:</strong> r<sub>ij</sub> = x<sub>ij</sub> / max(x<sub>j</sub>) &nbsp;|&nbsp; 
+            <strong>Cost:</strong> r<sub>ij</sub> = min(x<sub>j</sub>) / x<sub>ij</sub>
+          </p>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="spk-table">
+            <thead>
+              <tr id="normalized-header">
+                <th>No</th><th>Pemain</th>
+              </tr>
+            </thead>
+            <tbody id="normalized-body">
+              <tr><td colspan="2" style="padding:30px;text-align:center;color:#4b5563">Belum ada data</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab Panel 3: Rankings -->
+      <div id="tab-panel-3" style="display:none;padding:20px">
+        <h3 style="font-size:13px;font-weight:700;color:#f9fafb;margin:0 0 12px;display:flex;align-items:center;gap:8px">
+          <span style="width:3px;height:16px;background:#f59e0b;border-radius:2px;display:inline-block"></span>
+          Peringkat Akhir SAW & Rekomendasi Starting XI
+        </h3>
+        <div style="padding:10px 14px;border-radius:8px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);margin-bottom:16px">
+          <p style="font-size:12px;color:#fbbf24;margin:0">
+            Skor akhir SAW: <strong>V<sub>i</sub> = Σ (w<sub>j</sub> × r<sub>ij</sub>)</strong>. 
+            Pemain dengan skor tertinggi masuk Starting XI (11 pemain teratas).
+          </p>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="spk-table">
+            <thead>
+              <tr>
+                <th>Peringkat</th>
+                <th>Nama Pemain</th>
+                <th>Posisi</th>
+                <th style="text-align:right">Skor SAW (Vᵢ)</th>
+                <th>Status</th>
+                <th>Rekomendasi</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-body">
+              <tr><td colspan="6" style="padding:30px;text-align:center;color:#4b5563">Belum ada data</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/results.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const u = getUser();
+    if (u) {
+      const nameEl = document.getElementById('user-name');
+      const roleEl = document.getElementById('user-role');
+      if (nameEl) nameEl.textContent = u.nama_lengkap || u.email || '-';
+      const roleMap = { admin: '🛡️ Administrator', pelatih: '⚽ Pelatih', asisten: '📋 Asisten Pelatih' };
+      if (roleEl) roleEl.textContent = roleMap[u.role] || u.role || '-';
+    }
+  });
+</script>
+</body>
+</html>

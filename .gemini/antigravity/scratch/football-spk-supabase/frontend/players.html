@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Data Pemain | SPK Football</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;box-sizing:border-box}
+    body{background:#0a0f1e;color:#f9fafb;margin:0}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:256px;background:#0d1424;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;z-index:100}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:#6b7280;text-decoration:none;transition:all .2s}
+    .nav-link:hover{background:rgba(255,255,255,.05);color:#d1d5db}
+    .nav-link.nav-active{background:rgba(16,185,129,.12);color:#34d399!important}
+    .glass-card{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.08);border-radius:12px;backdrop-filter:blur(12px)}
+    .input-field{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#f9fafb;font-size:13.5px;outline:none;transition:all .2s}
+    .input-field:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+    .input-field::placeholder{color:#4b5563}
+    select.input-field option{background:#111827;color:#f9fafb}
+    .btn-primary{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;cursor:pointer;transition:all .2s}
+    .btn-primary:hover:not(:disabled){box-shadow:0 4px 16px rgba(16,185,129,.35);transform:translateY(-1px)}
+    .btn-primary:disabled{opacity:.6;cursor:not-allowed}
+    .btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;background:transparent;color:#9ca3af;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .2s}
+    .btn-ghost:hover{background:rgba(255,255,255,.05);color:#f9fafb}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner-sm{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+    #btn-logout{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:9px;border-radius:8px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+    #btn-logout:hover{background:rgba(239,68,68,.15)}
+    .spk-table{width:100%;border-collapse:collapse;font-size:13px}
+    .spk-table th{padding:11px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid rgba(255,255,255,.06)}
+
+    /* Action Buttons */
+    .btn-ie{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid rgba(59,130,246,.25);background:rgba(59,130,246,.1);color:#60a5fa;cursor:pointer;transition:all .2s}
+    .btn-ie:hover{background:rgba(59,130,246,.2);border-color:rgba(59,130,246,.5)}
+    .btn-id{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.1);color:#f87171;cursor:pointer;transition:all .2s}
+    .btn-id:hover{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.5)}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+    .modal-panel{background:#0d1424;border:1px solid rgba(255,255,255,.1);border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative}
+    .modal-header{padding:20px 24px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#0d1424;z-index:1;border-radius:16px 16px 0 0}
+    .modal-body{padding:20px 24px}
+    .modal-footer{padding:16px 24px 20px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:#0d1424;border-radius:0 0 16px 16px}
+    .form-group{margin-bottom:16px}
+    .form-label{display:block;font-size:12px;font-weight:600;color:#9ca3af;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+    .btn-close{background:none;border:none;color:#6b7280;cursor:pointer;padding:4px;border-radius:6px;display:flex;transition:color .2s}
+    .btn-close:hover{color:#f9fafb}
+
+    /* Toast */
+    #toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+    .toast{padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;min-width:260px;max-width:380px;animation:slideIn .3s ease;border:1px solid;display:flex;align-items:center;gap:10px}
+    .toast-success{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.3);color:#34d399}
+    .toast-error{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#f87171}
+    .toast-warning{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);color:#fbbf24}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5"/>
+        <path d="M12 2C12 2 9 7 9 12C9 17 12 22 12 22" stroke="white" stroke-width="1.5"/>
+        <path d="M2 12H22" stroke="white" stroke-width="1.5"/>
+        <path d="M4 7C4 7 8 9 12 9C16 9 20 7 20 7" stroke="white" stroke-width="1.2"/>
+        <path d="M4 17C4 17 8 15 12 15C16 15 20 17 20 17" stroke="white" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#f9fafb">SPK Football</div>
+      <div style="font-size:10px;color:#4b5563;margin-top:1px">Pemilihan Pemain Utama</div>
+    </div>
+  </div>
+  <nav style="flex:1;padding:16px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+    <a href="dashboard.html" class="nav-link" data-nav-page="dashboard.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="players.html" class="nav-link" data-nav-page="players.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Data Pemain
+    </a>
+    <a href="evaluations.html" class="nav-link" data-nav-page="evaluations.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Input Evaluasi
+    </a>
+    <a href="results.html" class="nav-link" data-nav-page="results.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Hasil SPK
+    </a>
+  </nav>
+  <div style="padding:12px;border-top:1px solid rgba(255,255,255,.06)">
+    <div id="user-info" style="padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.03);margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:#d1d5db" id="user-name">-</div>
+      <div style="font-size:11px;color:#4b5563;margin-top:2px" id="user-role">-</div>
+    </div>
+    <button id="btn-logout">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div style="margin-left:256px;min-height:100vh;padding:28px 32px">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#f9fafb;margin:0 0 4px">Data Pemain</h1>
+      <p style="font-size:13px;color:#6b7280;margin:0">Kelola data pemain dan status kelayakan</p>
+    </div>
+    <button id="btn-add-player" class="btn-primary" onclick="openAdd()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Tambah Pemain
+    </button>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="glass-card" style="padding:16px 20px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:200px">
+        <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search-player" class="input-field" placeholder="Cari nama pemain..." style="padding-left:34px"/>
+      </div>
+      <select id="filter-position" class="input-field" style="width:160px">
+        <option value="all">Semua Posisi</option>
+        <option value="GK">GK</option><option value="CB">CB</option>
+        <option value="LB">LB</option><option value="RB">RB</option>
+        <option value="CDM">CDM</option><option value="CM">CM</option>
+        <option value="CAM">CAM</option><option value="LM">LM</option>
+        <option value="RM">RM</option><option value="LW">LW</option>
+        <option value="RW">RW</option><option value="ST">ST</option>
+        <option value="CF">CF</option>
+      </select>
+      <select id="filter-status" class="input-field" style="width:150px">
+        <option value="all">Semua Status</option>
+        <option value="Aktif">Aktif</option>
+        <option value="Cedera">Cedera</option>
+        <option value="Akumulasi">Akumulasi</option>
+        <option value="Skors">Skors</option>
+      </select>
+      <span style="font-size:12px;color:#6b7280;white-space:nowrap"><span id="player-count">0 pemain</span></span>
+    </div>
+  </div>
+
+  <!-- Players Table -->
+  <div class="glass-card">
+    <div style="overflow-x:auto">
+      <table class="spk-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Pemain</th>
+            <th>Posisi</th>
+            <th>Usia</th>
+            <th>No. Punggung</th>
+            <th>Status</th>
+            <th>Kelayakan</th>
+            <th style="text-align:center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="player-table-body">
+          <tr><td colspan="8" style="padding:40px;text-align:center;color:#4b5563">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add/Edit Player -->
+<div id="modal-player" class="modal-backdrop">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2 style="font-size:16px;font-weight:700;color:#f9fafb;margin:0" id="modal-title">Tambah Pemain</h2>
+      <button class="btn-close" onclick="closeModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form id="player-form">
+      <input type="hidden" id="form-id"/>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr;gap:0">
+          <div class="form-group">
+            <label class="form-label" for="form-nama">Nama Pemain <span style="color:#ef4444">*</span></label>
+            <input id="form-nama" class="input-field" type="text" placeholder="Masukkan nama lengkap pemain" required/>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="form-group">
+              <label class="form-label" for="form-posisi">Posisi <span style="color:#ef4444">*</span></label>
+              <select id="form-posisi" class="input-field" required>
+                <option value="">Pilih Posisi</option>
+                <option value="GK">GK – Penjaga Gawang</option>
+                <option value="CB">CB – Bek Tengah</option>
+                <option value="LB">LB – Bek Kiri</option>
+                <option value="RB">RB – Bek Kanan</option>
+                <option value="CDM">CDM – Gelandang Bertahan</option>
+                <option value="CM">CM – Gelandang Tengah</option>
+                <option value="CAM">CAM – Gelandang Serang</option>
+                <option value="LM">LM – Gelandang Kiri</option>
+                <option value="RM">RM – Gelandang Kanan</option>
+                <option value="LW">LW – Sayap Kiri</option>
+                <option value="RW">RW – Sayap Kanan</option>
+                <option value="ST">ST – Striker</option>
+                <option value="CF">CF – Penyerang</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-status">Status</label>
+              <select id="form-status" class="input-field">
+                <option value="Aktif">Aktif</option>
+                <option value="Cedera">Cedera</option>
+                <option value="Akumulasi">Akumulasi</option>
+                <option value="Skors">Skors</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="form-group">
+              <label class="form-label" for="form-usia">Usia (tahun)</label>
+              <input id="form-usia" class="input-field" type="number" min="15" max="45" placeholder="cth: 24"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-jersey">No. Punggung</label>
+              <input id="form-jersey" class="input-field" type="number" min="1" max="99" placeholder="cth: 10"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="form-catatan">Catatan</label>
+            <textarea id="form-catatan" class="input-field" rows="2" placeholder="Catatan tambahan (opsional)" style="resize:vertical"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" onclick="closeModal()">Batal</button>
+        <button type="submit" id="btn-submit" class="btn-primary">
+          <span id="btn-submit-spinner" class="spinner-sm"></span>
+          <span id="btn-submit-text">Simpan Pemain</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Confirm Delete -->
+<div id="modal-delete" class="modal-backdrop">
+  <div class="modal-panel" style="max-width:420px">
+    <div class="modal-header">
+      <h2 style="font-size:16px;font-weight:700;color:#f9fafb;margin:0">Konfirmasi Hapus</h2>
+      <button class="btn-close" onclick="closeDelete()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        </div>
+        <div>
+          <p style="font-size:14px;color:#d1d5db;margin:0 0 6px">Anda akan menghapus pemain:</p>
+          <p style="font-size:15px;font-weight:700;color:#f9fafb;margin:0 0 10px" id="del-name">-</p>
+          <p style="font-size:12px;color:#6b7280;margin:0">Tindakan ini tidak dapat dibatalkan. Semua data evaluasi pemain ini juga akan terhapus.</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-ghost" onclick="closeDelete()">Batal</button>
+      <button type="button" id="btn-confirm-del" onclick="confirmDelete()"
+              style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;cursor:pointer">
+        <div id="del-spinner" class="spinner-sm"></div>
+        <span id="del-btn-text">Ya, Hapus</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/players.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const u = getUser();
+    if (u) {
+      const nameEl = document.getElementById('user-name');
+      const roleEl = document.getElementById('user-role');
+      if (nameEl) nameEl.textContent = u.nama_lengkap || u.email || '-';
+      const roleMap = { admin: '🛡️ Administrator', pelatih: '⚽ Pelatih', asisten: '📋 Asisten Pelatih' };
+      if (roleEl) roleEl.textContent = roleMap[u.role] || u.role || '-';
+    }
+  });
+</script>
+</body>
+</html>
